@@ -1,0 +1,2 @@
+usb-monitor>=1.23
+rich>=13.0.0
