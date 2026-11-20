@@ -12,9 +12,11 @@ Identifies devices by name when possible (Logitech keyboards, RTL-SDR receivers,
 
 | File | Description |
 |------|-------------|
-| [**USBInspector.exe**](https://github.com/Stand77/USB-Inspector/raw/main/USBInspector.exe) | Standalone Windows app (~10 MB) |
+| [**USBInspector.exe**](https://github.com/Stand77/USB-Inspector/releases/download/v1.3.0/USBInspector.exe) | Standalone Windows app (~10 MB) |
 
-1. Click the link above (or open the repo and click `USBInspector.exe`).
+**Release page:** [v1.3.0](https://github.com/Stand77/USB-Inspector/releases/tag/v1.3.0)
+
+1. Click the link above to download.
 2. Save the file somewhere convenient.
 3. Double-click to run. Windows may show a SmartScreen warning the first time — choose **More info** → **Run anyway** (this is normal for unsigned apps).
 
@@ -80,17 +82,11 @@ The executable appears in `dist\USBInspector.exe`.
 
 ## Publishing a new version (for maintainers)
 
-### Recommended: GitHub Releases (best for binaries)
-
 1. Build a fresh `USBInspector.exe` on Windows.
 2. On GitHub: **Releases** → **Draft a new release**.
-3. Tag e.g. `v1.3.0`, title e.g. `USB Inspector v1.3.0`.
+3. Tag e.g. `v1.4.0`, title e.g. `USB Inspector v1.4.0`.
 4. Upload `USBInspector.exe` as a release asset.
-5. Publish. Users download from the Releases page (cleaner than storing the binary in git).
-
-### Optional: keep a copy in the repo
-
-You can also commit `USBInspector.exe` on `main` so the raw-file link in this README keeps working. Prefer Releases for larger or frequent updates.
+5. Publish, then update the download link in this README to the new tag.
 
 ---
 
