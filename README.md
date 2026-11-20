@@ -1,107 +1,124 @@
 # USB Device Inspector
 
-A Python application that inspects currently connected USB devices and monitors for hot-plug events (devices being plugged in or unplugged).
+Inspect USB devices on your PC and watch for hot-plug events in real time.
 
-It identifies devices by name (e.g., Logitech Wireless Keyboard, RTL-SDR Receiver, ANT+ dongle, etc.), shows location/port information where available, vendor/product IDs, serial numbers, and more.
+Identifies devices by name when possible (Logitech keyboards, RTL-SDR receivers, Spectrum Interlink controllers, MediaTek preloader / Alexa boot mode, and many more), shows port/location info, VID:PID with human-readable names, serial numbers, and a short "Likely" purpose summary.
+
+**Version:** 1.3.0
+
+---
+
+## Download Windows executable (no Python required)
+
+| File | Description |
+|------|-------------|
+| [**USBInspector.exe**](https://github.com/Stand77/USB-Inspector/raw/main/USBInspector.exe) | Standalone Windows app (~10 MB) |
+
+1. Click the link above (or open the repo and click `USBInspector.exe`).
+2. Save the file somewhere convenient.
+3. Double-click to run. Windows may show a SmartScreen warning the first time — choose **More info** → **Run anyway** (this is normal for unsigned apps).
+
+No Python install is needed for the `.exe`.
+
+---
 
 ## Features
 
-- Lists all currently connected USB devices with detailed information
-- Real-time monitoring of device insertion and removal (hot-plugging)
-- Cross-platform support (Linux, Windows, macOS) via the `usb-monitor` library
-- Clean, colored terminal output using Rich
-- Shows useful identifiers:
-  - Device model / product name
-  - Vendor name
-  - VID:PID
-  - Serial number (when available)
-  - Location / path (e.g. `/dev/bus/usb/...` on Linux, device ID on Windows)
-  - USB interfaces
+- Lists currently connected USB devices with clear names and locations
+- Real-time **hot-plug** monitoring (connect / disconnect panels)
+- **Likely** purpose summary (mouse, keyboard, SDR, flight controller, etc.)
+- Human-readable Vendor / Device ID text when known
+- Automatic lookup from the official [usb.ids](http://www.linux-usb.org/usb.ids) database (cached after first run)
+- Windows **Port_# / Hub_#** location info when available
+- Curated entries for common devices (Logitech, Realtek RTL-SDR, Spectrum Interlink DX, MediaTek preloader, etc.)
 
-## Installation
+---
+
+## Run from source (Python)
 
 ```bash
-# Create a virtual environment (recommended)
+# Clone
+git clone https://github.com/Stand77/USB-Inspector.git
+cd USB-Inspector
+
+# Virtual environment (recommended)
 python -m venv venv
-source venv/bin/activate   # On Windows: venv\Scripts\activate
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
 
-# Install dependencies
+# Dependencies
 pip install -r requirements.txt
-```
 
-**Note on Linux:** You may need additional system packages for full USB access:
-```bash
-sudo apt install python3-dev libudev-dev   # Debian/Ubuntu
-# or equivalent on other distros
-```
-
-**Note on Windows:** The `usb-monitor` library uses `pywin32` and `wmi`, which are installed automatically.
-
-## Usage
-
-```bash
+# Run
 python usb_inspector.py
 ```
 
-The app will:
-1. Print a table of all currently connected USB devices
-2. Start monitoring for hot-plug events
-3. Print clear messages when devices are plugged in or unplugged
-4. Run until you press `Ctrl+C`
+**Windows note:** `usb-monitor` pulls in `pywin32` and `wmi` automatically.
 
-### Example Output
+**Linux note:** You may need:
 
-```
-Currently Connected USB Devices
-┌─────────────────────────────────────────────────────────────┬──────────────────────────┬──────────┬─────────────────────┐
-│ Location                                                    │ Device                   │ VID:PID  │ Vendor              │
-├─────────────────────────────────────────────────────────────┼──────────────────────────┼──────────┼─────────────────────┤
-│ /dev/bus/usb/001/003                                        │ Logitech USB Receiver    │ 046d:c52b│ Logitech, Inc.      │
-│ /dev/bus/usb/001/004                                        │ RTL2832U                 │ 0bda:2838│ Realtek             │
-└─────────────────────────────────────────────────────────────┴──────────────────────────┴──────────┴─────────────────────┘
-
-Monitoring for USB hot-plug events... (Ctrl+C to exit)
-
-[2026-10-23 12:05:12] CONNECTED
-  Location: /dev/bus/usb/001/005
-  Device:   Wireless Mouse
-  VID:PID:  046d:c077
-  Vendor:   Logitech, Inc.
-  Serial:   (none)
-
-[2026-10-23 12:05:45] DISCONNECTED
-  Location: /dev/bus/usb/001/005
-  Device:   Wireless Mouse
-  ...
+```bash
+sudo apt install python3-dev libudev-dev
 ```
 
-## How It Works
+---
 
-The application uses the excellent cross-platform [`usb-monitor`](https://pypi.org/project/usb-monitor/) library, which:
+## Build your own Windows .exe
 
-- Uses **pyudev** on Linux
-- Uses **WMI** on Windows
-- Uses the I/O Registry on macOS
+On a Windows machine with Python 3.9+ (or 3.10+):
 
-It normalizes device attributes across platforms so the same code works everywhere.
+```cmd
+pip install -r requirements.txt pyinstaller
+py -3.9 -m PyInstaller --onefile --name USBInspector usb_inspector.py
+```
 
-The "Location" field uses the device path/ID provided by the underlying system (closest practical equivalent to a USB port number across platforms).
+The executable appears in `dist\USBInspector.exe`.
+
+---
+
+## Publishing a new version (for maintainers)
+
+### Recommended: GitHub Releases (best for binaries)
+
+1. Build a fresh `USBInspector.exe` on Windows.
+2. On GitHub: **Releases** → **Draft a new release**.
+3. Tag e.g. `v1.3.0`, title e.g. `USB Inspector v1.3.0`.
+4. Upload `USBInspector.exe` as a release asset.
+5. Publish. Users download from the Releases page (cleaner than storing the binary in git).
+
+### Optional: keep a copy in the repo
+
+You can also commit `USBInspector.exe` on `main` so the raw-file link in this README keeps working. Prefer Releases for larger or frequent updates.
+
+---
+
+## How it works
+
+Uses the cross-platform [usb-monitor](https://pypi.org/project/usb-monitor/) library:
+
+- **Windows:** WMI
+- **Linux:** pyudev
+- **macOS:** I/O Registry
+
+Identification order:
+
+1. Local curated VID:PID list  
+2. Official `usb.ids` database (downloaded once and cached)  
+3. Class / interface heuristics (HID mouse/keyboard, mass storage, etc.)
+
+---
 
 ## Limitations
 
-- Physical port numbers (e.g. "Port 3 on Hub 2") are not always directly available in a consistent cross-platform way. The location path is the best portable identifier.
-- Some devices may not report a friendly product name; in those cases VID:PID is shown.
-- Root hubs and internal USB controllers are also listed.
-- On some systems, elevated privileges may be required to see all devices.
+- Physical port numbers are approximate; nested hubs show as `Port_#xxxx.Hub_#yyyy` when Windows provides that info.
+- Some devices only appear briefly (e.g. MediaTek PreLoader during boot) or not at all when fully booted if they only use USB for power.
+- Windows SmartScreen may warn about unsigned executables.
+- Elevated privileges may be needed on some systems to see every device.
 
-## Extending
-
-You can easily modify `usb_inspector.py` to:
-- Filter for specific VID/PID pairs
-- Trigger actions when particular devices are plugged in
-- Export events to a log file or JSON
-- Add a GUI with tkinter or a web interface
+---
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
